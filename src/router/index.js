@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import WelcomePage from '../views/WelcomePage.vue';
 import ImcDataPage from '../views/ImcDataPage.vue';
 import ResultPage from '../views/ResultPage.vue';
+import LoggedPage from '../views/LoggedPage.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,6 +21,11 @@ const router = createRouter({
       path: '/result',
       name: 'result',
       component: ResultPage,
+    },
+    {
+      path: '/logged',
+      name: 'logged',
+      component: LoggedPage,
     },
   ],
 });

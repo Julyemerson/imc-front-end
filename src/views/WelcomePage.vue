@@ -1,61 +1,80 @@
 <template>
-    <form>
-        <div class="flex flex-col p-6 rounded-md  space-y-4 relative h-1/2 ">
-            <label class=" text-2xl font-medium text-gray-700" for="name">Nome:</label>
-            <input autocomplete="name" class="w-full text-xl px-3 py-2 rounded-lg shadow-sm border border-gray-300 
-            focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 " type="text" name="name"
-                id="name" v-model="name">
-            <span class="text-red-500 font-medium text-sm">{{ nameError }}</span>
+  <div v-if="hasError" class="flex flex-col items-center">
+    <h3 class="text-lg font-medium text-red-500">Este email já está cadastrado em nosso sistema.</h3>
+    <RouterLink class="text-teal-500 text-md font-normal underline decoration-wavy" :to="{ name: 'logged' }">Acesso por
+      email
+    </RouterLink>
+  </div>
+  <form>
+    <div class="flex flex-col p-6 rounded-md  space-y-4 relative h-1/2 ">
+      <BaseInput name="name" v-model="name" label="Nome:" />
+      <span class="text-red-500 font-medium text-sm">{{ nameError }}</span>
 
-            <label class="block text-2xl font-medium text-gray-700" for="email">E-mail:</label>
-            <input autocomplete="email" class="w-full text-xl px-3 py-2 rounded-lg shadow-sm border border-gray-300 
-            focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500 " type="text" name="email"
-                id="email" v-model="email">
-            <span class="text-red-500 font-medium text-sm">{{ emailError }}</span>
+      <BaseInput name="email" v-model="email" label="Email:" />
+      <span class="text-red-500 font-medium text-sm">{{ emailError }}</span>
 
-            <button @click.prevent="onSubmit" class="border-solid border-2 px-4 py-2 border-teal-400 rounded-lg 
-                hover:border-none hover:bg-teal-400 hover:text-gray-700 font-medium hover:scale-110 
-                hover:transition hover:ease-in-out hover:duration-500">
-                Proxima Etapa
-            </button>
-        </div>
-    </form>
+      <button @click.prevent="onSubmit" class="btn-next">
+        Proxima Etapa
+      </button>
+    </div>
+  </form>
 </template>
 
 <script setup>
-import api from '@/services/api';
+import BaseInput from '@/components/BaseInput.vue';
+import { api } from '@/services/api';
 import { useStore } from '@/stores/imcStore';
 import { useField, useForm } from 'vee-validate'
 import { useRouter } from 'vue-router';
+import { useLoading } from 'vue-loading-overlay';
+import { ref } from 'vue';
 import * as yup from "yup"
 
 const router = useRouter()
 
+const hasError = ref(false)
+
 const schema = yup.object({
-    email: yup.string().required().email(),
-    name: yup.string().required()
+  email: yup.string().required().email(),
+  name: yup.string().required()
 })
 
 const { handleSubmit } = useForm({
-    validationSchema: schema,
+  validationSchema: schema,
 })
 
+
+const $loading = useLoading()
+const loaderConfig = {
+  color: '#14b8a',
+  backgroundColor: 'rgba(136,136,136,0.1)',
+  blur: '2px',
+  opacity: 1,
+  canCancel: false,
+  isFullPage: true,
+  loader: 'dots'
+}
+
 const onSubmit = handleSubmit(async () => {
-    const store = useStore()
-    const users = {
-        "name": name.value,
-        "email": email.value
+  const loader = $loading.show(loaderConfig)
+  const store = useStore()
+  const users = {
+    "name": name.value,
+    "email": email.value
+  }
+  const CONFLICT_ERROR = 409
+  try {
+    const res = await api.post('/users', users, { headers: 'application/json' })
+    store.setUser(res.data)
+    loader.hide()
+    router.push({ name: 'imcData' })
+  } catch (error) {
+    if (error.response.status === CONFLICT_ERROR) {
+      return hasError.value = true
     }
-    const CONFLICT_ERROR = 409
-    try {
-        const res = await api.post('/users', users, { headers: 'application/json' })
-        store.setUser(res.data)
-        router.push({ name: 'imcData' })
-    } catch (error) {
-        if (error.status === CONFLICT_ERROR) {
-            console.log('usuário já cadastrado')
-        }
-    }
+  } finally {
+    loader.hide()
+  }
 })
 
 const { value: name, errorMessage: nameError } = useField('name');

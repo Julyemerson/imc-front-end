@@ -3,7 +3,9 @@
     <div class="flex flex-col justify-center items-center h-screen  bg-gray-100 ">
       <Steps />
       <div>
-        <RouterView />
+        <suspense>
+          <RouterView />
+        </suspense>
       </div>
     </div>
   </div>

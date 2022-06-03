@@ -1,3 +1,20 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .btn-next {
+    @apply border-solid border-2 px-4 py-2 border-teal-400 rounded-lg 
+    hover:border-none hover:bg-teal-400 hover:text-gray-700 font-medium hover:scale-110 
+    hover:transition hover:ease-in-out hover:duration-500;
+  }
+  .btn-previous {
+    @apply border-solid border-2 px-4 py-2
+      text-gray-700 font-medium border-teal-400 rounded-lg hover:text-gray-700 hover:scale-110 
+      hover:transition hover:ease-in-out hover:duration-500;
+  }
+  .input-base {
+    @apply w-full text-xl px-3 py-2 rounded-lg shadow-sm border border-gray-300 
+    focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500;
+  }
+}
