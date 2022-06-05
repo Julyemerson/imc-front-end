@@ -1,7 +1,8 @@
 <template>
+  <Steps />
   <div v-if="hasError" class="flex flex-col items-center">
     <h3 class="text-lg font-medium text-red-500">Este email já está cadastrado em nosso sistema.</h3>
-    <RouterLink class="text-teal-500 text-md font-normal underline decoration-wavy" :to="{ name: 'logged' }">Acesso por
+    <RouterLink class="text-teal-500 text-md font-normal underline decoration-wavy" :to="{ name: 'login' }">Acesso por
       email
     </RouterLink>
   </div>
@@ -13,7 +14,7 @@
       <BaseInput name="email" v-model="email" label="Email:" />
       <span class="text-red-500 font-medium text-sm">{{ emailError }}</span>
 
-      <button @click.prevent="onSubmit" class="btn-next">
+      <button @click.prevent="onSubmit" type="submit" class="btn-next">
         Proxima Etapa
       </button>
     </div>
@@ -22,16 +23,17 @@
 
 <script setup>
 import BaseInput from '@/components/BaseInput.vue';
+import Steps from '@/components/Steps.vue';
 import { api } from '@/services/api';
 import { useStore } from '@/stores/imcStore';
 import { useField, useForm } from 'vee-validate'
 import { useRouter } from 'vue-router';
 import { useLoading } from 'vue-loading-overlay';
+import { loaderConfig } from '@/utils/loaderConfig';
 import { ref } from 'vue';
 import * as yup from "yup"
 
 const router = useRouter()
-
 const hasError = ref(false)
 
 const schema = yup.object({
@@ -43,26 +45,17 @@ const { handleSubmit } = useForm({
   validationSchema: schema,
 })
 
-
 const $loading = useLoading()
-const loaderConfig = {
-  color: '#14b8a',
-  backgroundColor: 'rgba(136,136,136,0.1)',
-  blur: '2px',
-  opacity: 1,
-  canCancel: false,
-  isFullPage: true,
-  loader: 'dots'
-}
+
 
 const onSubmit = handleSubmit(async () => {
   const loader = $loading.show(loaderConfig)
   const store = useStore()
+  const CONFLICT_ERROR = 409
   const users = {
     "name": name.value,
     "email": email.value
   }
-  const CONFLICT_ERROR = 409
   try {
     const res = await api.post('/users', users, { headers: 'application/json' })
     store.setUser(res.data)
@@ -70,7 +63,8 @@ const onSubmit = handleSubmit(async () => {
     router.push({ name: 'imcData' })
   } catch (error) {
     if (error.response.status === CONFLICT_ERROR) {
-      return hasError.value = true
+      store.setUserEmail(users.email)
+      hasError.value = true
     }
   } finally {
     loader.hide()

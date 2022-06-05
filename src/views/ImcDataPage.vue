@@ -1,4 +1,5 @@
 <template>
+  <Steps />
   <form>
     <h3 v-if="hasUser" class="text-gray-700 font-medium text-center text-lg mt-4">Olá, {{ store.user.name }}! <br />
       Agora eu preciso do seu <strong>peso e altura </strong><span class="text-xs text-gray-400">(em cm)</span>
@@ -27,8 +28,10 @@ import { useStore } from '@/stores/imcStore';
 import { useField, useForm } from 'vee-validate'
 import { useLoading } from 'vue-loading-overlay';
 import { useRouter } from 'vue-router';
+import { loaderConfig } from '@/utils/loaderConfig';
 import * as yup from "yup"
 import BaseInput from '../components/BaseInput.vue';
+import Steps from '../components/Steps.vue';
 
 
 const store = useStore()
@@ -45,15 +48,6 @@ const { handleSubmit } = useForm({
 })
 
 const $loading = useLoading()
-const loaderConfig = {
-  color: '#14b8a',
-  backgroundColor: 'rgba(136,136,136,0.1)',
-  blur: '2px',
-  opacity: 1,
-  canCancel: false,
-  isFullPage: true,
-  loader: 'dots'
-}
 
 const onSubmit = handleSubmit(async () => {
   const loader = $loading.show(loaderConfig)
@@ -64,8 +58,7 @@ const onSubmit = handleSubmit(async () => {
     "userEmail": store.user.email
   }
   try {
-    const res = await api.post('/health', imcData, { headers: 'application/json' })
-    store.setImcResult(res.data)
+    await api.post('/health', imcData, { headers: 'application/json' })
     loader.hide()
     router.push({ name: 'result' })
   } catch (error) {

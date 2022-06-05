@@ -9,15 +9,6 @@ export const useStore = defineStore({
       name: '',
       createdAt: '',
     },
-    imcResult: {
-      id: '',
-      weight: '',
-      height: '',
-      imc: '',
-      createdAt: '',
-      userId: '',
-    },
-    isLogged: false,
   }),
   actions: {
     setUser(user) {
@@ -26,8 +17,8 @@ export const useStore = defineStore({
     setImcResult(imc) {
       this.imcResult = imc;
     },
-    setLogged() {
-      this.isLogged = !this.isLogged;
+    setUserEmail(email) {
+      this.user.email = email;
     },
   },
   getters: {},
