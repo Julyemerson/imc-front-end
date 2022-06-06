@@ -2,4 +2,4 @@
 
 publish = "dist/"
 
-command = "npx vite build"
+command = "yarn build"
