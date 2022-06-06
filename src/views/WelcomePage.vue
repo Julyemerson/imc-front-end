@@ -33,12 +33,15 @@ import { loaderConfig } from '@/utils/loaderConfig';
 import { ref } from 'vue';
 import * as yup from "yup"
 
+const store = useStore()
 const router = useRouter()
 const hasError = ref(false)
 
 const schema = yup.object({
-  email: yup.string().required().email(),
-  name: yup.string().required()
+  email: yup.string()
+    .required('O campo email não pode ser vazio')
+    .email('Deve conter um email valido'),
+  name: yup.string().required('O campo nome não pode ser vazio')
 })
 
 const { handleSubmit } = useForm({
@@ -47,10 +50,8 @@ const { handleSubmit } = useForm({
 
 const $loading = useLoading()
 
-
 const onSubmit = handleSubmit(async () => {
   const loader = $loading.show(loaderConfig)
-  const store = useStore()
   const CONFLICT_ERROR = 409
   const users = {
     "name": name.value,
@@ -65,9 +66,8 @@ const onSubmit = handleSubmit(async () => {
     if (error.response.status === CONFLICT_ERROR) {
       store.setUserEmail(users.email)
       hasError.value = true
+      loader.hide()
     }
-  } finally {
-    loader.hide()
   }
 })
 

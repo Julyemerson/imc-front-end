@@ -6,8 +6,8 @@
       <thead class="">
         <tr>
           <th class="py-2 border-r-2 border-teal-500">Data</th>
-          <th>IMC</th>
-          <th>Excluir</th>
+          <th class="py-2 border-r-2 border-teal-500">IMC</th>
+          <th class="py-2 px-1 border-r-2 border-teal-500">Excluir</th>
         </tr>
       </thead>
       <tbody class="w-2">
@@ -16,7 +16,8 @@
           <td class="p-2 border-r-2 border-teal-500 font-medium ">{{ handleDateFormat(item.createdAt) }}</td>
           <td class="p-2 border-r-2 border-teal-500 font-medium ">{{ item.imc }}</td>
           <td class="p-2 border-r-2 border-teal-500 font-medium ">
-            <div class="rounded-full border-2 border-teal-400 h-4 w-4">X</div>
+            <div @click="deleteImc(item.id)"
+              class="rounded-full p-1 border text-center cursor-pointer border-teal-400 h-8 w-8">X</div>
           </td>
         </tr>
       </tbody>
@@ -29,25 +30,33 @@
   </div>
 </template>
 <script setup>
+import Steps from "@/components/Steps.vue";
+import { ref } from "vue";
 import { format } from "date-fns"
 import { useStore } from '@/stores/imcStore';
-import { api } from "../services/api";
-import { onMounted } from "vue";
-import Steps from "../components/Steps.vue";
-
-const userHealth = onMounted(async () => {
-  const { data } = await api.get(`users/${store.user.id}`).then((req) => req)
-  return data.health
-})
+import { api } from "@/services/api";
 
 const store = useStore()
-const imcItems = await userHealth()
+
+const { data } = await api.get(`users/${store.user.id}`)
+const imcItems = ref(await data.health)
+
+
+const deleteImc = (async (id) => {
+  const index = imcItems.value.findIndex((imc) => imc.id === id)
+
+  try {
+    await api.delete(`/health/${id}`)
+    imcItems.value.splice(index, 1)
+  } catch (error) {
+    console.log(error)
+  }
+})
 
 const handleDateFormat = ((fullDate) => {
   const realDateTime = new Date(fullDate)
   return format(realDateTime, 'dd/MM/yyyy')
 
 })
-
 
 </script>

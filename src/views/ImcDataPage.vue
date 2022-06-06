@@ -39,8 +39,8 @@ const router = useRouter()
 const hasUser = store.user.name ? true : false
 
 const schema = yup.object({
-  weight: yup.number().required().min(30),
-  height: yup.number().required().min(100),
+  weight: yup.number().required('Não pode ser vazio').min(30, 'Seu peso deve ser maior que 30'),
+  height: yup.number().required('Não pode ser vazio').min(100, 'Sua Altura deve ser maior que 100cm'),
 })
 
 const { handleSubmit } = useForm({

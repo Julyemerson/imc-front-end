@@ -26,37 +26,38 @@ import { useField, useForm } from 'vee-validate'
 import { useLoading } from 'vue-loading-overlay';
 import { api } from '@/services/api';
 import * as yup from "yup"
+import { useRouter } from 'vue-router';
 
 const store = useStore()
 const $loading = useLoading()
+const router = useRouter()
 
-const schema = yup.object({
-  email: yup.string().required().email()
-})
-
-const initialValue = {
+const initialValues = {
   loggedEmail: store.user.email
 }
 
-const { handleSubmit, } = useForm({
-  initialValues: initialValue,
-  validationSchema: schema,
+const schema = yup.object({
+  loggedEmail: yup.string()
+    .required('O campo email não pode ser vazio')
+    .email('Deve conter um email valido')
 })
 
+const { handleSubmit } = useForm({
+  validationSchema: schema,
+  initialValues
+})
 
 const onSubmit = handleSubmit(async () => {
-  const store = useStore()
-  const loader = $loading.show(loaderConfig)
-  console.log('chegou aqui')
+  const loader = $loading.show()
+  if (!store.user.email) {
+    store.setUserEmail(loggedEmail.value)
+  }
   try {
-    const userLogged = await api.get('/users', {
-      params: {
-        email: store.user.email
-      },
-      headers: 'application/json'
+    const res = await api.get('/users', {
+      params: { email: store.user.email }
     })
-    console.log(userLogged)
-    store.setUser(userLogged)
+    store.setUser(res.data)
+    router.push({ name: 'imcData' })
   } catch (error) {
     console.log(error)
   } finally {
